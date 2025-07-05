@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Speech to Text Transcriber</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; background: #f7f7f7; }
+        h1 { font-size: 1.8rem; }
+        #status { margin: 1rem 0; font-weight: bold; }
+        #transcription { padding: 1rem; background: #fff; border-radius: 8px; border: 1px solid #ddd; }
+        .spinner { border: 4px solid #ccc; border-top: 4px solid #007bff; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 0.5rem; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        button, input { padding: 0.5rem; margin: 0.5rem 0; }
+        #downloadButton { padding: 0.5rem 1rem; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        #downloadButton:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🎙️ Speech to Text Transcriber</h1>
+    <input type="file" id="audioFile" accept="audio/*"><br>
+    <button id="transcribeButton">Transcribe</button>
+
+    <div id="status"></div>
+    <div id="language"></div>
+    <div id="transcription"></div>
+    <button id="downloadButton" style="display:none;">Download Transcription</button>
+
+    <script>
+        const transcribeButton = document.getElementById('transcribeButton');
+        const audioFileInput = document.getElementById('audioFile');
+        const statusDiv = document.getElementById('status');
+        const languageDiv = document.getElementById('language');
+        const transcriptionDiv = document.getElementById('transcription');
+        const downloadButton = document.getElementById('downloadButton');
+
+        transcribeButton.onclick = async () => {
+            if (!audioFileInput.files.length) {
+                alert('Please choose an audio file first.');
+                return;
+            }
+
+            statusDiv.innerHTML = '<span class="spinner"></span>Transcribing...';
+            languageDiv.textContent = '';
+            transcriptionDiv.innerHTML = '';
+            downloadButton.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('audio', audioFileInput.files[0]);
+
+            try {
+                const response = await fetch('/transcribe', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                statusDiv.textContent = "✅ Done!";
+                languageDiv.textContent = "🌐 Detected language: " + data.language;
+
+                let fullText = '';
+                transcriptionDiv.innerHTML = '';
+                data.segments.forEach(segment => {
+                    transcriptionDiv.innerHTML += `<div><strong>[${segment.time}]</strong> ${segment.text}</div>`;
+                    fullText += `[${segment.time}] ${segment.text}\n`;
+                });
+
+                // Enable download
+                downloadButton.style.display = 'inline-block';
+                downloadButton.onclick = () => {
+                    const blob = new Blob([fullText], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'transcription.txt';
+                    a.click();
+                };
+            } catch (err) {
+                statusDiv.textContent = "❌ Error: " + err;
+            }
+        };
+    </script>
+</body>
+</html>
