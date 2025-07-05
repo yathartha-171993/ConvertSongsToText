@@ -1,6 +1,5 @@
-streamlit
-transformers
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.0.1+cpu
-sentencepiece
-pydub
+streamlit==1.29.0
+transformers==4.30.2
+torch==2.0.1
+sentencepiece==0.1.99
+pydub==0.25.1
