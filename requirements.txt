@@ -1,5 +1,4 @@
-streamlit==1.29.0
-transformers==4.30.2
-torch==2.0.1
-sentencepiece==0.1.99
-pydub==0.25.1
+Flask
+transformers
+torch
+sentencepiece
